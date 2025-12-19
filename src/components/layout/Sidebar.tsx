@@ -1,4 +1,4 @@
-import { Package, ShoppingCart, Truck, Settings, LogOut, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Package, ShoppingCart, Truck, Settings, LogOut, PanelLeftClose, PanelLeft, Calendar } from "lucide-react";
 import { useClerk } from "@clerk/clerk-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,7 @@ import { useState } from "react";
 const navItems = [
   { icon: Package, label: "Inventory", path: "/dashboard" },
   { icon: ShoppingCart, label: "Orders", path: "/orders" },
+  { icon: Calendar, label: "Calendar", path: "/calendar" },
   { icon: Truck, label: "Logistics", path: "/logistics" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
@@ -21,7 +22,7 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   const location = useLocation();
 
   return (
-    <aside 
+    <aside
       className={cn(
         "fixed left-0 top-0 z-40 h-screen sidebar-gradient transition-all duration-300",
         collapsed ? "w-16" : "w-64"

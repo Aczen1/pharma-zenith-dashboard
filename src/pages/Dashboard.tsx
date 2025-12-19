@@ -39,7 +39,6 @@ const Dashboard = () => {
       <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* KPI Cards - Left Section */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Top Row: Total Medicines & Total Stock */}
           <EnhancedKPICard
             title="Total Medicines"
             value={totalMedicines}
@@ -60,8 +59,7 @@ const Dashboard = () => {
             subtitle="Units in warehouse"
             delay={100}
           />
-          
-          {/* Bottom Row: Expiring Soon & Low Stock */}
+
           <EnhancedKPICard
             title="Expiring Soon"
             value={expiringSoon}

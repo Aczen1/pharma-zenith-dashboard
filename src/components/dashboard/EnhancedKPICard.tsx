@@ -50,11 +50,11 @@ const variantStyles = {
   },
 };
 
-export const EnhancedKPICard = ({ 
-  title, 
-  value, 
-  icon: Icon, 
-  variant, 
+export const EnhancedKPICard = ({
+  title,
+  value,
+  icon: Icon,
+  variant,
   chartType,
   chartData = [],
   donutTotal = 100,
@@ -82,37 +82,37 @@ export const EnhancedKPICard = ({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-2xl p-5 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1",
+        "relative overflow-hidden rounded-xl p-3 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-1",
         styles.bg,
         "opacity-0 animate-fade-in"
       )}
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className={cn("flex items-center justify-center w-10 h-10 rounded-xl", styles.iconBg)}>
-          <Icon className={cn("h-5 w-5", styles.text)} />
+      <div className="flex items-center justify-between mb-2">
+        <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg", styles.iconBg)}>
+          <Icon className={cn("h-4 w-4", styles.text)} />
         </div>
-        <span className={cn("text-xs font-medium uppercase tracking-wider", styles.subtext)}>
-          {subtitle || "This month"}
+        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", styles.subtext)}>
+          {subtitle || "Current"}
         </span>
       </div>
 
       {/* Value */}
-      <div className="mb-4">
-        <p className={cn("text-3xl font-bold tracking-tight", styles.text)}>
+      <div className="mb-2">
+        <p className={cn("text-2xl font-bold tracking-tight", styles.text)}>
           {typeof value === 'number' ? value.toLocaleString() : value}
         </p>
-        <p className={cn("text-sm font-medium mt-1", styles.subtext)}>{title}</p>
+        <p className={cn("text-xs font-medium mt-0.5", styles.subtext)}>{title}</p>
       </div>
 
       {/* Chart */}
-      <div className="mt-2">
+      <div className="mt-1 h-8">
         {renderChart()}
       </div>
 
       {/* Decorative elements */}
-      <div className={cn("absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-20", 
+      <div className={cn("absolute -top-6 -right-6 w-16 h-16 rounded-full opacity-20",
         variant === "coral" ? "bg-white" : "bg-black"
       )} />
     </div>

@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
 import Logistics from "./pages/Logistics";
 import Settings from "./pages/Settings";
+import CalendarPage from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 
 const CLERK_PUBLISHABLE_KEY = "pk_test_dG9waWNhbC1raXR0ZW4tNC5jbGVyay5hY2NvdW50cy5kZXYk";
@@ -18,15 +19,15 @@ const queryClient = new QueryClient();
 
 const AuthRedirect = () => {
   const { isLoaded, isSignedIn } = useAuth();
-  
+
   if (!isLoaded) {
     return null;
   }
-  
+
   if (isSignedIn) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return <Auth />;
 };
 
@@ -68,6 +69,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <CalendarPage />
                 </ProtectedRoute>
               }
             />
