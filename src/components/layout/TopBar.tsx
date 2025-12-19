@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { Search, Bell, Mic, MicOff, Languages, ChevronDown } from "lucide-react";
+import { Search, Bell, Mic, MicOff, Languages, ChevronDown, MapPin } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,23 +12,40 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useVoiceRecording } from "@/hooks/useVoiceRecording";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useLocation as useAppLocation } from "@/contexts/LocationContext";
+import { Language } from "@/lib/translations";
 
 interface TopBarProps {
   title: string;
 }
 
-const languages = [
-  { code: "en-US", name: "English" },
-  { code: "hi-IN", name: "Hindi" },
-  { code: "es-ES", name: "Spanish" },
-  { code: "fr-FR", name: "French" },
-  { code: "de-DE", name: "German" },
+const languages: { code: Language; name: string; nativeName: string }[] = [
+  { code: "en", name: "English", nativeName: "English" },
+  { code: "hi", name: "Hindi", nativeName: "हिंदी" },
+  { code: "te", name: "Telugu", nativeName: "తెలుగు" },
+  { code: "ta", name: "Tamil", nativeName: "தமிழ்" },
+  { code: "kn", name: "Kannada", nativeName: "ಕನ್ನಡ" },
 ];
+
+// Voice recognition language codes (different format)
+const voiceLanguageCodes: Record<Language, string> = {
+  en: "en-US",
+  hi: "hi-IN",
+  te: "te-IN",
+  ta: "ta-IN",
+  kn: "kn-IN",
+};
 
 export const TopBar = ({ title }: TopBarProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
-  const { isListening, transcript, isSupported, toggleListening } = useVoiceRecording(selectedLanguage.code);
+  const { language, setLanguage, t } = useLanguage();
+  const { location } = useAppLocation();
+
+  const selectedLanguage = languages.find(l => l.code === language) || languages[0];
+  const voiceLanguageCode = voiceLanguageCodes[language];
+
+  const { isListening, transcript, isSupported, toggleListening } = useVoiceRecording(voiceLanguageCode);
 
   // Update search query when voice transcript changes
   useEffect(() => {
@@ -38,7 +56,15 @@ export const TopBar = ({ title }: TopBarProps) => {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-card/80 backdrop-blur-md px-6">
-      <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+      <div className="flex items-center gap-3">
+        <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+
+        {/* Location Badge */}
+        <Badge variant="secondary" className="gap-1.5 px-2.5 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800">
+          <MapPin className="h-3 w-3" />
+          <span className="text-xs font-medium">{t('locationBadge')}</span>
+        </Badge>
+      </div>
 
       <div className="flex items-center gap-4">
         {/* Enhanced Search with Voice */}
@@ -47,7 +73,7 @@ export const TopBar = ({ title }: TopBarProps) => {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search medicines, suppliers..."
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-80 pl-9 pr-4 bg-background"
@@ -79,7 +105,7 @@ export const TopBar = ({ title }: TopBarProps) => {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
                 <Languages className="h-4 w-4" />
-                <span className="hidden sm:inline">{selectedLanguage.name}</span>
+                <span className="hidden sm:inline">{selectedLanguage.nativeName}</span>
                 <ChevronDown className="h-3 w-3 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -87,13 +113,14 @@ export const TopBar = ({ title }: TopBarProps) => {
               {languages.map((lang) => (
                 <DropdownMenuItem
                   key={lang.code}
-                  onClick={() => setSelectedLanguage(lang)}
+                  onClick={() => setLanguage(lang.code)}
                   className={cn(
                     "cursor-pointer",
-                    selectedLanguage.code === lang.code && "bg-accent"
+                    language === lang.code && "bg-accent"
                   )}
                 >
-                  {lang.name}
+                  <span className="font-medium">{lang.nativeName}</span>
+                  <span className="ml-2 text-xs text-muted-foreground">({lang.name})</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
