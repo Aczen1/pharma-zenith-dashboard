@@ -22,7 +22,7 @@ interface SaleRow {
     Qty_Sold: string;
 }
 
-interface ForecastRow {
+export interface ForecastRow {
     Date: string;
     Forecast_Date: string; // Adjust as per CSV content
     Drug_Name: string;
@@ -32,6 +32,7 @@ interface ForecastRow {
 export const useInventory = () => {
     const [medicines, setMedicines] = useState<Medicine[]>([]);
     const [shipments, setShipments] = useState<Shipment[]>([]);
+    const [forecast, setForecast] = useState<ForecastRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +51,10 @@ export const useInventory = () => {
 
                 const purchases = Papa.parse<PurchaseRow>(purchasesText, { header: true }).data;
                 const sales = Papa.parse<SaleRow>(salesText, { header: true }).data;
-                const forecast = Papa.parse<ForecastRow>(forecastText, { header: true }).data;
+                const forecastData = Papa.parse<ForecastRow>(forecastText, { header: true }).data;
+
+                // Keep forecast in state to return it
+                setForecast(forecastData);
 
                 // 1. Calculate Stock Levels per Batch
                 const batchStock = new Map<string, any>(); // Batch -> { details, stock }
@@ -104,7 +108,7 @@ export const useInventory = () => {
                 // 2. Calculate Predicted Demand per Drug (Next 7 sums)
                 // Group forecast by Drug Name
                 const drugForecast = new Map<string, number>();
-                forecast.forEach(f => {
+                forecastData.forEach(f => {
                     if (!f.Drug_Name) return;
                     const drugName = f.Drug_Name.trim().toLowerCase();
                     const qty = parseFloat(f.Predicted_Qty) || 0;
@@ -154,5 +158,5 @@ export const useInventory = () => {
         fetchData();
     }, []);
 
-    return { medicines, shipments, loading, error };
+    return { medicines, shipments, forecast, loading, error };
 };

@@ -1,4 +1,4 @@
-import { Package, ShoppingCart, Truck, Settings, LogOut, PanelLeftClose, PanelLeft, Calendar } from "lucide-react";
+import { Package, ShoppingCart, Truck, Settings, LogOut, PanelLeftClose, PanelLeft, Calendar, Scan } from "lucide-react";
 import { useClerk } from "@clerk/clerk-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ const navItems = [
   { icon: ShoppingCart, label: "Orders", path: "/orders" },
   { icon: Calendar, label: "Calendar", path: "/calendar" },
   { icon: Truck, label: "Logistics", path: "/logistics" },
+  { icon: Scan, label: "Smart Shelf", path: "/smart-shelf" },
   { icon: Settings, label: "Settings", path: "/settings" },
 ];
 
