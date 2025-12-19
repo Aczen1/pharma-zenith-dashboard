@@ -10,18 +10,14 @@ interface DashboardLayoutProps {
 }
 
 export const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
+  // Fixed icon-only sidebar
   return (
     <div className="min-h-screen bg-background">
       <Sidebar
-        collapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        collapsed={true}
+        onToggle={() => { }}
       />
-      <div className={cn(
-        "transition-all duration-300",
-        sidebarCollapsed ? "ml-16" : "ml-64"
-      )}>
+      <div className="ml-20 transition-all duration-300">
         <TopBar title={title} />
         <main className="p-6">{children}</main>
       </div>

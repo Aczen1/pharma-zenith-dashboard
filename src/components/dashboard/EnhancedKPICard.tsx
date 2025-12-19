@@ -17,6 +17,7 @@ interface EnhancedKPICardProps {
   donutTotal?: number;
   delay?: number;
   subtitle?: string;
+  decorativeIcon?: LucideIcon;
 }
 
 const variantStyles = {
@@ -31,7 +32,7 @@ const variantStyles = {
     bg: "bg-gradient-to-br from-[#FFB347] via-[#FF9B3D] to-[#F58025]",
     text: "text-[#4A2800]",
     subtext: "text-[#6B3D0A]",
-    chartColor: "#4A2800",
+    chartColor: "#1A4D36",
     iconBg: "bg-[#F58025]/30",
   },
   coral: {
@@ -45,7 +46,7 @@ const variantStyles = {
     bg: "bg-gradient-to-br from-[#A8E6CF] via-[#7DD8B5] to-[#56C596]",
     text: "text-[#1A4D36]",
     subtext: "text-[#2D6B4F]",
-    chartColor: "#1A4D36",
+    chartColor: "#4A2800",
     iconBg: "bg-[#56C596]/30",
   },
 };
@@ -59,7 +60,8 @@ export const EnhancedKPICard = ({
   chartData = [],
   donutTotal = 100,
   delay = 0,
-  subtitle
+  subtitle,
+  decorativeIcon: DecorativeIcon
 }: EnhancedKPICardProps) => {
   const styles = variantStyles[variant];
   const numValue = typeof value === "string" ? parseInt(value) : value;
@@ -99,17 +101,24 @@ export const EnhancedKPICard = ({
       </div>
 
       {/* Value */}
-      <div className="mb-2">
+      <div className="mb-1">
         <p className={cn("text-2xl font-bold tracking-tight", styles.text)}>
           {typeof value === 'number' ? value.toLocaleString() : value}
         </p>
-        <p className={cn("text-xs font-medium mt-0.5", styles.subtext)}>{title}</p>
+        <p className={cn("text-[11px] font-medium mt-0.5", styles.subtext)}>{title}</p>
       </div>
 
-      {/* Chart */}
-      <div className="mt-1 h-8">
+      {/* Chart - Reduced height */}
+      <div className="mt-1 h-6">
         {renderChart()}
       </div>
+
+      {/* Decorative Icon - Bottom Right */}
+      {DecorativeIcon && (
+        <div className="absolute bottom-2 right-2 opacity-20">
+          <DecorativeIcon className={cn("h-12 w-12", styles.text)} />
+        </div>
+      )}
 
       {/* Decorative elements */}
       <div className={cn("absolute -top-6 -right-6 w-16 h-16 rounded-full opacity-20",

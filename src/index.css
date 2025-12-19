@@ -36,32 +36,37 @@
 
     --radius: 0.75rem;
 
-    /* Pharma Zenith Custom Colors */
-    --pharma-navy: 222 47% 15%;
-    --pharma-navy-light: 222 30% 25%;
-    
+    /* Pharma Zenith Custom Colors - Updated to Purplish */
+    --pharma-purple: 270 60% 25%;
+    --pharma-purple-light: 270 50% 35%;
+
     /* KPI Card Gradients */
     --kpi-yellow-start: 45 93% 58%;
     --kpi-yellow-end: 38 92% 50%;
-    
+
     --kpi-orange-start: 25 95% 53%;
     --kpi-orange-end: 17 88% 45%;
-    
+
     --kpi-red-start: 0 84% 60%;
     --kpi-red-end: 0 72% 51%;
-    
+
     --kpi-green-start: 142 76% 46%;
     --kpi-green-end: 142 69% 38%;
 
-    /* Sidebar */
-    --sidebar-background: 222 47% 15%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 210 40% 98%;
-    --sidebar-primary-foreground: 222 47% 15%;
-    --sidebar-accent: 222 30% 22%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 222 30% 25%;
-    --sidebar-ring: 210 40% 98%;
+    /* Sidebar - Minimal Neutral Palette */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 220 14% 96%;
+    --sidebar-primary-foreground: 222 47% 11%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 222 47% 20%;
+
+    /* Removed purple colors */
+    --purple-primary: 0 0% 0%;
+    --purple-accent: 0 0% 0%;
+    --purple-lavender: 0 0% 0%;
   }
 
   .dark {
@@ -110,20 +115,21 @@
   .kpi-card-yellow {
     background: linear-gradient(135deg, hsl(var(--kpi-yellow-start)) 0%, hsl(var(--kpi-yellow-end)) 100%);
   }
-  
+
   .kpi-card-orange {
     background: linear-gradient(135deg, hsl(var(--kpi-orange-start)) 0%, hsl(var(--kpi-orange-end)) 100%);
   }
-  
+
   .kpi-card-red {
     background: linear-gradient(135deg, hsl(var(--kpi-red-start)) 0%, hsl(var(--kpi-red-end)) 100%);
   }
-  
+
   .kpi-card-green {
     background: linear-gradient(135deg, hsl(var(--kpi-green-start)) 0%, hsl(var(--kpi-green-end)) 100%);
   }
 
   .sidebar-gradient {
-    background: linear-gradient(180deg, hsl(var(--pharma-navy)) 0%, hsl(var(--pharma-navy-light)) 100%);
+    background: #ffffff;
+    border-right: 1px solid #f3f4f6;
   }
 }

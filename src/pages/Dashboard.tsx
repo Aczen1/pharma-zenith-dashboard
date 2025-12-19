@@ -1,4 +1,4 @@
-import { Package, Layers, AlertTriangle, TrendingDown } from "lucide-react";
+import { Pill, Beaker, AlertTriangle, TrendingDown } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { EnhancedKPICard } from "@/components/dashboard/EnhancedKPICard";
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
@@ -42,22 +42,24 @@ const Dashboard = () => {
           <EnhancedKPICard
             title="Total Medicines"
             value={totalMedicines}
-            icon={Package}
+            icon={Pill}
             variant="lime"
             chartType="bar"
             chartData={medicineChartData}
             subtitle="Unique items"
             delay={0}
+            decorativeIcon={Pill}
           />
           <EnhancedKPICard
             title="Total Stock"
             value={totalStock}
-            icon={Layers}
+            icon={Beaker}
             variant="orange"
             chartType="area"
             chartData={stockChartData}
             subtitle="Units in warehouse"
             delay={100}
+            decorativeIcon={Beaker}
           />
 
           <EnhancedKPICard

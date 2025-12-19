@@ -5,15 +5,15 @@ interface KPICardProps {
   title: string;
   value: number | string;
   icon: LucideIcon;
-  variant: "yellow" | "orange" | "red" | "green";
+  variant: "green" | "orange" | "red" | "yellow";
   delay?: number;
 }
 
 const variantClasses = {
-  yellow: "kpi-card-yellow",
+  yellow: "kpi-card-green",
   orange: "kpi-card-orange",
   red: "kpi-card-red",
-  green: "kpi-card-green",
+  green: "kpi-card-red",
 };
 
 export const KPICard = ({ title, value, icon: Icon, variant, delay = 0 }: KPICardProps) => {
@@ -35,7 +35,7 @@ export const KPICard = ({ title, value, icon: Icon, variant, delay = 0 }: KPICar
           <Icon className="h-6 w-6 text-white" />
         </div>
       </div>
-      
+
       {/* Decorative element */}
       <div className="absolute -bottom-4 -right-4 h-24 w-24 rounded-full bg-white/10" />
     </div>

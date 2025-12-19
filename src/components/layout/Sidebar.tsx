@@ -2,7 +2,7 @@ import { Package, ShoppingCart, Truck, Settings, LogOut, PanelLeftClose, PanelLe
 import { useClerk } from "@clerk/clerk-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navItems = [
   { icon: Package, label: "Inventory", path: "/dashboard" },
@@ -24,84 +24,75 @@ export const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen sidebar-gradient transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
+        "fixed left-0 top-0 z-40 h-screen w-20 transition-all duration-300",
+        "bg-white border-r border-gray-100 flex flex-col items-center py-6"
       )}
     >
-      <div className="flex h-full flex-col">
-        {/* Logo */}
-        <div className={cn(
-          "flex h-16 items-center gap-3 border-b border-sidebar-border",
-          collapsed ? "justify-center px-2" : "px-6"
-        )}>
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-foreground/10">
-            <Package className="h-5 w-5 text-sidebar-foreground" />
-          </div>
-          {!collapsed && (
-            <span className="text-lg font-semibold text-sidebar-foreground">
-              Pharma Zenith
-            </span>
-          )}
-        </div>
+      {/* Logo */}
+      <div className="flex h-12 w-12 items-center justify-center mb-8 rounded-xl bg-indigo-50 text-indigo-600">
+        <Package className="h-6 w-6" />
+      </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 px-3 py-4">
+      {/* Navigation */}
+      <TooltipProvider delayDuration={0}>
+        <nav className="flex-1 w-full space-y-4 px-3">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
+
             return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                  collapsed && "justify-center px-2",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-foreground"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                )}
-                title={collapsed ? item.label : undefined}
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && item.label}
-              </NavLink>
+              <Tooltip key={item.path}>
+                <TooltipTrigger asChild>
+                  <NavLink
+                    to={item.path}
+                    className={cn(
+                      "flex items-center justify-center w-full aspect-square rounded-2xl transition-all duration-200 group relative",
+                      isActive
+                        ? "bg-gray-100/80 text-gray-900"
+                        : "text-gray-400 hover:bg-gray-50 hover:text-gray-600"
+                    )}
+                  >
+                    <item.icon className={cn(
+                      "h-6 w-6 transition-transform duration-200",
+                      isActive ? "scale-105" : "group-hover:scale-110"
+                    )} />
+
+                    {/* Active Indicator Dot */}
+                    {isActive && (
+                      <div className="absolute right-2 top-2 w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    )}
+                  </NavLink>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  className="ml-2 font-medium bg-gray-900 text-white border-none shadow-lg px-3 py-1.5 rounded-lg"
+                  sideOffset={10}
+                >
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
             );
           })}
         </nav>
+      </TooltipProvider>
 
-        {/* Bottom Section */}
-        <div className="border-t border-sidebar-border p-3 space-y-1">
-          {/* Collapse Toggle */}
-          <button
-            onClick={onToggle}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-all duration-200 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-              collapsed && "justify-center px-2"
-            )}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      {/* Bottom Section */}
+      <div className="w-full px-3 mt-auto">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => signOut()}
+              className="flex items-center justify-center w-full aspect-square rounded-2xl text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all duration-200"
+            >
+              <LogOut className="h-6 w-6" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="right"
+            className="ml-2 font-medium bg-red-500 text-white border-none shadow-lg px-3 py-1.5 rounded-lg"
           >
-            {collapsed ? (
-              <PanelLeft className="h-5 w-5 flex-shrink-0" />
-            ) : (
-              <>
-                <PanelLeftClose className="h-5 w-5 flex-shrink-0" />
-                Collapse
-              </>
-            )}
-          </button>
-
-          {/* Sign Out */}
-          <button
-            onClick={() => signOut()}
-            className={cn(
-              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-all duration-200 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
-              collapsed && "justify-center px-2"
-            )}
-            title={collapsed ? "Sign out" : undefined}
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            {!collapsed && "Sign Out"}
-          </button>
-        </div>
+            Sign Out
+          </TooltipContent>
+        </Tooltip>
       </div>
     </aside>
   );
