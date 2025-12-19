@@ -1,73 +1,31 @@
-# Welcome to your Lovable project
+# Pharmacy Zenith Dashboard - Smart Inventory System
 
-## Project info
+## Overview
+A Streamlit-based dashboard for managing pharmacy inventory, featuring real-time Google Sheets integration and FEFO (First-Expiry-First-Out) logic.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Features
+- **Real-Time Dashboard**: View Sales, Revenue, and Stock levels.
+- **Smart Shelf**: FEFO logic to highlight expiring batches.
+- **Offline Fallback**: Automatically switches to local CSVs if internet fails.
 
-## How can I edit this code?
+## Setup Instructions
 
-There are several ways of editing your application.
+1. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-**Use Lovable**
+2. **Configure Secrets**:
+   - Replace the dummy values in `secrets.toml` with your Google Cloud Service Account keys.
+   - Or, for public demo, ensure `st.secrets` are set up.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+3. **Run the App**:
+   ```bash
+   streamlit run app.py
+   ```
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Folder Structure
+- `app.py`: Main dashboard.
+- `pages/`: Contains the Smart Shelf page.
+- `db_manager.py`: Handles database connections.
+- `cleaned_*.csv`: Backup data files.
