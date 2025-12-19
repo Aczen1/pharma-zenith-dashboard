@@ -1,7 +1,8 @@
 import { Truck, Package, MapPin, Clock, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { shipments, Shipment } from "@/data/inventoryData";
+import { shipments as staticShipments, Shipment } from "@/data/inventoryData";
 import { cn } from "@/lib/utils";
+import { useInventory } from "@/hooks/useInventory";
 
 const statusConfig = {
   "In Transit": {
@@ -115,6 +116,12 @@ const ShipmentCard = ({ shipment, index }: { shipment: Shipment; index: number }
 };
 
 const Logistics = () => {
+  const { shipments, loading } = useInventory();
+
+  if (loading) {
+    return <div className="p-8 text-center">Loading Logistics Data...</div>;
+  }
+
   const inTransit = shipments.filter((s) => s.status === "In Transit").length;
   const delivered = shipments.filter((s) => s.status === "Delivered").length;
   const pending = shipments.filter((s) => s.status === "Pending").length;

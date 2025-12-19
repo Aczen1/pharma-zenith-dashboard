@@ -186,25 +186,25 @@ export const shipments: Shipment[] = [
 ];
 
 // Helper functions
-export const getUniqueCategories = (): string[] => {
-  return [...new Set(medicines.map((m) => m.category))];
+export const getUniqueCategories = (medicines: Medicine[]): string[] => {
+  return [...new Set(medicines.map((m) => m.category || "General"))];
 };
 
-export const getTotalMedicines = (): number => {
+export const getTotalMedicines = (medicines: Medicine[]): number => {
   return medicines.length;
 };
 
-export const getTotalStock = (): number => {
+export const getTotalStock = (medicines: Medicine[]): number => {
   return medicines.reduce((sum, m) => sum + m.currentStock, 0);
 };
 
-export const getExpiringSoon = (days: number = 30): Medicine[] => {
+export const getExpiringSoon = (medicines: Medicine[], days: number = 30): Medicine[] => {
   const today = new Date();
   const threshold = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
   return medicines.filter((m) => new Date(m.expiryDate) <= threshold);
 };
 
-export const getLowStock = (): Medicine[] => {
+export const getLowStock = (medicines: Medicine[]): Medicine[] => {
   return medicines.filter((m) => m.currentStock < m.predictedDemand);
 };
 
@@ -212,7 +212,7 @@ export const getMedicineStatus = (medicine: Medicine): "Healthy" | "Low" | "Expi
   const today = new Date();
   const expiryDate = new Date(medicine.expiryDate);
   const daysUntilExpiry = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   if (daysUntilExpiry <= 30) return "Expiring";
   if (medicine.currentStock < medicine.predictedDemand) return "Low";
   return "Healthy";

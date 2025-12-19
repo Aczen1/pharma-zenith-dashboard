@@ -8,14 +8,22 @@ import { generateDummyMedicines, Medicine } from "@/data/calendarData";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useInventory } from "@/hooks/useInventory";
 
 const CalendarPage = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-    // In a real app, this would come from an API/Query
-    const allMedicines = generateDummyMedicines();
+    const { medicines, loading } = useInventory();
+
+    const allMedicines: Medicine[] = medicines.map(m => ({
+        id: m.id,
+        medicineName: m.name,
+        batchNumber: m.batchNumber,
+        expiryDate: new Date(m.expiryDate),
+        quantity: m.currentStock
+    }));
 
     const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
     const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));

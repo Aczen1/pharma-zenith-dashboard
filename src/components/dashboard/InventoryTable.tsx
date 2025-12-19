@@ -17,8 +17,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { medicines, getUniqueCategories, getMedicineStatus, Medicine } from "@/data/inventoryData";
+import { medicines as staticMedicines, getUniqueCategories, getMedicineStatus, Medicine } from "@/data/inventoryData";
 import { cn } from "@/lib/utils";
+import { useInventory } from "@/hooks/useInventory";
 
 type SortField = "name" | "currentStock" | "expiryDate";
 type SortOrder = "asc" | "desc";
@@ -30,12 +31,13 @@ const statusStyles = {
 };
 
 export const InventoryTable = () => {
+  const { medicines } = useInventory(); // Fetch real data
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
-  const categories = getUniqueCategories();
+  const categories = getUniqueCategories(medicines);
 
   const filteredAndSortedMedicines = useMemo(() => {
     let result = [...medicines];
@@ -73,7 +75,7 @@ export const InventoryTable = () => {
     });
 
     return result;
-  }, [searchQuery, selectedCategory, sortField, sortOrder]);
+  }, [searchQuery, selectedCategory, sortField, sortOrder, medicines]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -97,7 +99,7 @@ export const InventoryTable = () => {
       {/* Header */}
       <div className="flex flex-col gap-4 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold text-foreground">Medicine Inventory</h2>
-        
+
         <div className="flex flex-wrap items-center gap-3">
           {/* Search */}
           <div className="relative">
@@ -124,14 +126,16 @@ export const InventoryTable = () => {
               <DropdownMenuItem onClick={() => setSelectedCategory(null)}>
                 All Categories
               </DropdownMenuItem>
-              {categories.map((category) => (
-                <DropdownMenuItem
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </DropdownMenuItem>
-              ))}
+              {categories
+                .filter(category => category !== "General")
+                .map((category) => (
+                  <DropdownMenuItem
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    {category}
+                  </DropdownMenuItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

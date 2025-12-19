@@ -1,5 +1,6 @@
 import { TrendingUp, TrendingDown, AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
-import { medicines, getExpiringSoon, getLowStock } from "@/data/inventoryData";
+import { getExpiringSoon, getLowStock } from "@/data/inventoryData";
+import { useInventory } from "@/hooks/useInventory";
 
 import { cn } from "@/lib/utils";
 import {
@@ -21,51 +22,6 @@ interface InsightItem {
   value?: string;
   image: string;
 }
-
-const getInsights = (): InsightItem[] => {
-  const expiring = getExpiringSoon();
-  const lowStock = getLowStock();
-  const totalStock = medicines.reduce((sum, m) => sum + m.currentStock, 0);
-  const avgStock = Math.round(totalStock / medicines.length);
-
-  return [
-    {
-      id: "1",
-      type: "success",
-      title: "Stock Performance",
-      description: `Average ${avgStock} units per medicine`,
-      trend: "up",
-      value: "+12%",
-      image: "/images/insights/stock-performance.png",
-    },
-    {
-      id: "2",
-      type: expiring.length > 2 ? "danger" : "warning",
-      title: "Expiry Alert",
-      description: `${expiring.length} medicines expiring soon`,
-      value: expiring.length > 0 ? expiring[0].name.split(" ")[0] : "None",
-      image: "/images/insights/expiry-alert.png",
-    },
-    {
-      id: "3",
-      type: lowStock.length > 3 ? "danger" : "info",
-      title: "Reorder Needed",
-      description: `${lowStock.length} items below threshold`,
-      trend: lowStock.length > 3 ? "down" : undefined,
-      value: lowStock.length > 0 ? `-${lowStock.length}` : "OK",
-      image: "/images/insights/low-stock.png",
-    },
-    {
-      id: "4",
-      type: "success",
-      title: "Top Category",
-      description: "Pain Relief leading sales",
-      trend: "up",
-      value: "34%",
-      image: "/images/insights/top-category.png",
-    },
-  ];
-};
 
 const typeStyles = {
   success: {
@@ -108,7 +64,55 @@ const getIcon = (type: InsightItem["type"]) => {
 };
 
 export const InsightsPanel = () => {
-  const insights = getInsights();
+  const { medicines, loading } = useInventory(); // Fetch data
+
+  // Logic moved inside component to access medicines state
+  const insights = (() => {
+    if (loading || medicines.length === 0) return [];
+
+    const expiring = getExpiringSoon(medicines);
+    const lowStock = getLowStock(medicines);
+    const totalStock = medicines.reduce((sum, m) => sum + m.currentStock, 0);
+    const avgStock = medicines.length ? Math.round(totalStock / medicines.length) : 0;
+
+    return [
+      {
+        id: "1",
+        type: "success" as const, // Type assertion for stricter string literal types if needed
+        title: "Stock Performance",
+        description: `Average ${avgStock} units per medicine`,
+        trend: "up" as const,
+        value: "+12%",
+        image: "/images/insights/stock-performance.png",
+      },
+      {
+        id: "2",
+        type: expiring.length > 2 ? "danger" as const : "warning" as const,
+        title: "Expiry Alert",
+        description: `${expiring.length} medicines expiring soon`,
+        value: expiring.length > 0 ? expiring[0].name.split(" ")[0] : "None",
+        image: "/images/insights/expiry-alert.png",
+      },
+      {
+        id: "3",
+        type: lowStock.length > 3 ? "danger" as const : "info" as const,
+        title: "Reorder Needed",
+        description: `${lowStock.length} items below threshold`,
+        trend: lowStock.length > 3 ? "down" as const : undefined,
+        value: lowStock.length > 0 ? `-${lowStock.length}` : "OK",
+        image: "/images/insights/low-stock.png",
+      },
+      {
+        id: "4",
+        type: "success" as const,
+        title: "Top Category",
+        description: "Pain Relief leading sales",
+        trend: "up" as const,
+        value: "34%",
+        image: "/images/insights/top-category.png",
+      },
+    ];
+  })();
   const plugin = useRef(
     Autoplay({ delay: 4000, stopOnInteraction: true })
   );

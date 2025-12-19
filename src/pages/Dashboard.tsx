@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { EnhancedKPICard } from "@/components/dashboard/EnhancedKPICard";
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
 import { InventoryTable } from "@/components/dashboard/InventoryTable";
+import { useInventory } from "@/hooks/useInventory";
 import {
   getTotalMedicines,
   getTotalStock,
@@ -28,10 +29,16 @@ const lowStockChartData = [
 ];
 
 const Dashboard = () => {
-  const totalMedicines = getTotalMedicines();
-  const totalStock = getTotalStock();
-  const expiringSoon = getExpiringSoon().length;
-  const lowStock = getLowStock().length;
+  const { medicines, loading } = useInventory();
+
+  if (loading) {
+    return <div className="p-8 text-center">Loading Inventory Data...</div>;
+  }
+
+  const totalMedicines = getTotalMedicines(medicines);
+  const totalStock = getTotalStock(medicines);
+  const expiringSoon = getExpiringSoon(medicines).length;
+  const lowStock = getLowStock(medicines).length;
 
   return (
     <DashboardLayout title="Inventory Dashboard">
