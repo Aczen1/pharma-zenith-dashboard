@@ -40,7 +40,7 @@ export const translations = {
         selectMedicineToView: 'Select a medicine to view its forecast',
 
         // Location Badge
-        locationBadge: 'Hyderabad (Simulated)',
+        locationBadge: 'MLRIT HYDERABAD',
 
         // Dashboard
         keyMetrics: 'Key Metrics',
