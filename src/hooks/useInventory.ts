@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Papa from 'papaparse';
 import { Medicine, Shipment } from '../data/inventoryData';
 
@@ -8,7 +8,7 @@ interface PurchaseRow {
     Drug_Name: string;
     Supplier_Name: string;
     Batch_Number: string;
-    Qty_Received: string; // CSV parses as string often
+    Qty_Received: string;
     Unit_Cost_Price: string;
     Total_Purchase_Cost: string;
     Expiry_Date: string;
@@ -22,9 +22,27 @@ interface SaleRow {
     Qty_Sold: string;
 }
 
+interface UploadedPurchaseRow {
+    Date: string;
+    Product_Name: string;
+    Quantity_Purchased: string;
+    Unit_Cost: string;
+    Supplier_Name: string;
+    Batch_Number: string;
+}
+
+interface UploadedSaleRow {
+    Date: string;
+    Product_Name: string;
+    Quantity_Sold: string;
+    Unit_Price: string;
+    Total_Amount: string;
+    Customer_ID: string;
+}
+
 export interface ForecastRow {
     Date: string;
-    Forecast_Date: string; // Adjust as per CSV content
+    Forecast_Date: string;
     Drug_Name: string;
     Predicted_Qty: string;
 }
@@ -36,127 +54,170 @@ export const useInventory = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [purchasesRes, salesRes, forecastRes] = await Promise.all([
-                    fetch('/final_cleaned_purchases.csv'),
-                    fetch('/final_cleaned_sales.csv'),
-                    fetch('/pharmacy_forecast_next_30_days.csv')
-                ]);
+    const fetchData = useCallback(async () => {
+        try {
+            const [purchasesRes, salesRes, forecastRes] = await Promise.all([
+                fetch('/final_cleaned_purchases.csv'),
+                fetch('/final_cleaned_sales.csv'),
+                fetch('/pharmacy_forecast_next_30_days.csv')
+            ]);
 
-                const purchasesText = await purchasesRes.text();
-                const salesText = await salesRes.text();
-                const forecastText = await forecastRes.text();
+            const purchasesText = await purchasesRes.text();
+            const salesText = await salesRes.text();
+            const forecastText = await forecastRes.text();
 
-                const purchases = Papa.parse<PurchaseRow>(purchasesText, { header: true }).data;
-                const sales = Papa.parse<SaleRow>(salesText, { header: true }).data;
-                const forecastData = Papa.parse<ForecastRow>(forecastText, { header: true }).data;
+            const purchases = Papa.parse<PurchaseRow>(purchasesText, { header: true }).data;
+            const sales = Papa.parse<SaleRow>(salesText, { header: true }).data;
+            const forecastData = Papa.parse<ForecastRow>(forecastText, { header: true }).data;
 
-                // Keep forecast in state to return it
-                setForecast(forecastData);
+            // Get uploaded data from localStorage
+            const uploadedPurchases: UploadedPurchaseRow[] = JSON.parse(localStorage.getItem('pharma_purchase_data') || '[]');
+            const uploadedSales: UploadedSaleRow[] = JSON.parse(localStorage.getItem('pharma_sales_data') || '[]');
 
-                // 1. Calculate Stock Levels per Batch
-                const batchStock = new Map<string, any>(); // Batch -> { details, stock }
-                const newShipments: Shipment[] = [];
-                const today = new Date(); // Use real today
+            setForecast(forecastData);
 
-                // Process Purchases
-                purchases.forEach(p => {
-                    if (!p.Batch_Number) return;
-                    const qty = parseInt(p.Qty_Received) || 0;
-                    const dateReceived = new Date(p.Date_Received);
+            const batchStock = new Map<string, any>();
+            const newShipments: Shipment[] = [];
+            const today = new Date();
 
-                    if (dateReceived > today) {
-                        // Future Shipment
-                        newShipments.push({
-                            id: p.Purchase_ID || Math.random().toString(),
-                            trackingNumber: `TRK-${p.Purchase_ID}`, // Fabricated
-                            origin: p.Supplier_Name || "Supplier",
-                            destination: "Central Warehouse",
-                            status: "In Transit", // Simplification
-                            estimatedDelivery: p.Date_Received,
-                            medicines: [p.Drug_Name],
-                            quantity: qty
-                        });
-                        // Do NOT add to current stock
-                        return;
-                    }
+            // Process CSV Purchases
+            purchases.forEach(p => {
+                if (!p.Batch_Number) return;
+                const qty = parseInt(p.Qty_Received) || 0;
+                const dateReceived = new Date(p.Date_Received);
 
-                    if (!batchStock.has(p.Batch_Number)) {
-                        batchStock.set(p.Batch_Number, {
-                            ...p,
-                            currentStock: 0,
-                            initialStock: 0
-                        });
-                    }
-                    const batch = batchStock.get(p.Batch_Number);
-                    batch.currentStock += qty;
-                    batch.initialStock += qty;
-                });
-
-                // Process Sales (Subtract from Batch)
-                sales.forEach(s => {
-                    if (!s.Batch_Number) return;
-                    const qty = parseInt(s.Qty_Sold) || 0;
-                    // Only subtract if batch exists (meaning it was received)
-                    if (batchStock.has(s.Batch_Number)) {
-                        batchStock.get(s.Batch_Number).currentStock -= qty;
-                    }
-                });
-
-                // 2. Calculate Predicted Demand per Drug (Next 7 sums)
-                // Group forecast by Drug Name
-                const drugForecast = new Map<string, number>();
-                forecastData.forEach(f => {
-                    if (!f.Drug_Name) return;
-                    const drugName = f.Drug_Name.trim().toLowerCase();
-                    const qty = parseFloat(f.Predicted_Qty) || 0;
-                    const currentTotal = drugForecast.get(drugName) || 0;
-                    drugForecast.set(drugName, currentTotal + qty);
-                });
-
-                // 3. Transform to Medicine Interface
-                const newMedicines: Medicine[] = [];
-                let idCounter = 1;
-
-                batchStock.forEach((value, batchNo) => {
-                    if (value.currentStock <= 0) return; // Hide sold out (optional)
-
-                    // Try to match forecast
-                    // Forecast file names might be lowercase
-                    const drugNameLower = value.Drug_Name.toLowerCase();
-                    // Simple heuristic to match forecast (taking average or sum if multiple days)
-                    // The forecast file is day-by-day. Let's assume the sum we calculated is rough 30 day demand.
-                    // We want 7-day demand. We summed ALL rows in CSV.
-                    // Let's blindly divide by 4 to get ~1 week demand if the CSV is 30 days.
-                    const totalForecast = drugForecast.get(drugNameLower) || 0;
-                    const weeklyDemand = Math.round(totalForecast / 4);
-
-                    newMedicines.push({
-                        id: (idCounter++).toString(),
-                        name: value.Drug_Name,
-                        batchNumber: batchNo,
-                        category: "General", // CSV doesn't have category, defaulting
-                        currentStock: value.currentStock,
-                        expiryDate: value.Expiry_Date,
-                        predictedDemand: weeklyDemand > 0 ? weeklyDemand : 5 // Fallback
+                if (dateReceived > today) {
+                    newShipments.push({
+                        id: p.Purchase_ID || Math.random().toString(),
+                        trackingNumber: `TRK-${p.Purchase_ID}`,
+                        origin: p.Supplier_Name || "Supplier",
+                        destination: "Central Warehouse",
+                        status: "In Transit",
+                        estimatedDelivery: p.Date_Received,
+                        medicines: [p.Drug_Name],
+                        quantity: qty
                     });
+                    return;
+                }
+
+                if (!batchStock.has(p.Batch_Number)) {
+                    batchStock.set(p.Batch_Number, {
+                        ...p,
+                        currentStock: 0,
+                        initialStock: 0
+                    });
+                }
+                const batch = batchStock.get(p.Batch_Number);
+                batch.currentStock += qty;
+                batch.initialStock += qty;
+            });
+
+            // Process Uploaded Purchases
+            uploadedPurchases.forEach(p => {
+                if (!p.Batch_Number || !p.Product_Name) return;
+                const qty = parseInt(p.Quantity_Purchased) || 0;
+                const batchKey = p.Batch_Number;
+
+                if (!batchStock.has(batchKey)) {
+                    batchStock.set(batchKey, {
+                        Drug_Name: p.Product_Name,
+                        Batch_Number: p.Batch_Number,
+                        Supplier_Name: p.Supplier_Name,
+                        Expiry_Date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                        currentStock: 0,
+                        initialStock: 0
+                    });
+                }
+                const batch = batchStock.get(batchKey);
+                batch.currentStock += qty;
+                batch.initialStock += qty;
+            });
+
+            // Process CSV Sales
+            sales.forEach(s => {
+                if (!s.Batch_Number) return;
+                const qty = parseInt(s.Qty_Sold) || 0;
+                if (batchStock.has(s.Batch_Number)) {
+                    batchStock.get(s.Batch_Number).currentStock -= qty;
+                }
+            });
+
+            // Process Uploaded Sales
+            uploadedSales.forEach(s => {
+                if (!s.Product_Name) return;
+                const qty = parseInt(s.Quantity_Sold) || 0;
+                // Find matching product and subtract
+                batchStock.forEach((value) => {
+                    if (value.Drug_Name?.toLowerCase() === s.Product_Name?.toLowerCase()) {
+                        value.currentStock -= qty;
+                    }
                 });
+            });
 
-                setMedicines(newMedicines);
-                setShipments(newShipments);
-                setLoading(false);
+            // Calculate Predicted Demand per Drug
+            const drugForecast = new Map<string, number>();
+            forecastData.forEach(f => {
+                if (!f.Drug_Name) return;
+                const drugName = f.Drug_Name.trim().toLowerCase();
+                const qty = parseFloat(f.Predicted_Qty) || 0;
+                const currentTotal = drugForecast.get(drugName) || 0;
+                drugForecast.set(drugName, currentTotal + qty);
+            });
 
-            } catch (err) {
-                console.error("Failed to load inventory data", err);
-                setError("Failed to load data");
-                setLoading(false);
+            // Transform to Medicine Interface
+            const newMedicines: Medicine[] = [];
+            let idCounter = 1;
+
+            batchStock.forEach((value, batchNo) => {
+                if (value.currentStock <= 0) return;
+
+                const drugNameLower = (value.Drug_Name || '').toLowerCase();
+                const totalForecast = drugForecast.get(drugNameLower) || 0;
+                const weeklyDemand = Math.round(totalForecast / 4);
+
+                newMedicines.push({
+                    id: (idCounter++).toString(),
+                    name: value.Drug_Name || 'Unknown',
+                    batchNumber: batchNo,
+                    category: "General",
+                    currentStock: Math.max(0, value.currentStock),
+                    expiryDate: value.Expiry_Date || 'N/A',
+                    predictedDemand: weeklyDemand > 0 ? weeklyDemand : 5
+                });
+            });
+
+            setMedicines(newMedicines);
+            setShipments(newShipments);
+            setLoading(false);
+
+        } catch (err) {
+            console.error("Failed to load inventory data", err);
+            setError("Failed to load data");
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+
+        // Listen for storage changes to sync uploaded data
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key?.startsWith('pharma_')) {
+                fetchData();
             }
         };
 
-        fetchData();
-    }, []);
+        window.addEventListener('storage', handleStorageChange);
+        
+        // Also listen for custom events within same tab
+        const handleCustomStorage = () => fetchData();
+        window.addEventListener('pharma-data-updated', handleCustomStorage);
 
-    return { medicines, shipments, forecast, loading, error };
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('pharma-data-updated', handleCustomStorage);
+        };
+    }, [fetchData]);
+
+    return { medicines, shipments, forecast, loading, error, refetch: fetchData };
 };

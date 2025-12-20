@@ -1,9 +1,18 @@
-import { Pill, Beaker, AlertTriangle, TrendingDown } from "lucide-react";
+import { Pill, Beaker, AlertTriangle, TrendingDown, Download, FileText, FileSpreadsheet } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { EnhancedKPICard } from "@/components/dashboard/EnhancedKPICard";
 import { InsightsPanel } from "@/components/dashboard/InsightsPanel";
 import { InventoryTable } from "@/components/dashboard/InventoryTable";
 import { useInventory } from "@/hooks/useInventory";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
+import { toast } from "sonner";
 import {
   getTotalMedicines,
   getTotalStock,
@@ -31,6 +40,16 @@ const lowStockChartData = [
 const Dashboard = () => {
   const { medicines, loading } = useInventory();
 
+  const handleExportPDF = () => {
+    exportToPDF(medicines);
+    toast.success('PDF report downloaded successfully!');
+  };
+
+  const handleExportExcel = () => {
+    exportToExcel(medicines);
+    toast.success('Excel report downloaded successfully!');
+  };
+
   if (loading) {
     return <div className="p-8 text-center">Loading Inventory Data...</div>;
   }
@@ -42,6 +61,28 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout title="Inventory Dashboard">
+      {/* Export Actions */}
+      <div className="flex justify-end mb-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="gap-2 glass-card">
+              <Download className="w-4 h-4" />
+              Export Report
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="glass-card">
+            <DropdownMenuItem onClick={handleExportPDF} className="gap-2 cursor-pointer">
+              <FileText className="w-4 h-4 text-red-500" />
+              Download as PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleExportExcel} className="gap-2 cursor-pointer">
+              <FileSpreadsheet className="w-4 h-4 text-green-500" />
+              Download as Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Main KPI Grid with Insights */}
       <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* KPI Cards - Left Section */}
