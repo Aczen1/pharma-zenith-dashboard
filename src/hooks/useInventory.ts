@@ -39,19 +39,39 @@ export const useInventory = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [purchasesRes, salesRes, forecastRes] = await Promise.all([
-                    fetch('/final_cleaned_purchases.csv'),
-                    fetch('/final_cleaned_sales.csv'),
-                    fetch('/pharmacy_forecast_next_30_days.csv')
-                ]);
+                // FETCH STRATEGY: Try Python Backend (GSheets) -> Fallback to Local CSV
+                let purchases: any[] = [];
+                let sales: any[] = [];
+                let forecastData: any[] = [];
 
-                const purchasesText = await purchasesRes.text();
-                const salesText = await salesRes.text();
-                const forecastText = await forecastRes.text();
+                try {
+                    // Try Data Server
+                    const res = await fetch("http://localhost:5000/api/inventory");
+                    if (!res.ok) throw new Error("Server offline");
+                    const data = await res.json();
 
-                const purchases = Papa.parse<PurchaseRow>(purchasesText, { header: true }).data;
-                const sales = Papa.parse<SaleRow>(salesText, { header: true }).data;
-                const forecastData = Papa.parse<ForecastRow>(forecastText, { header: true }).data;
+                    // Backend returns list of dicts directly
+                    purchases = data.purchases;
+                    sales = data.sales;
+                    forecastData = data.forecast;
+
+                } catch (serverErr) {
+                    console.warn("Backend server unavailable, falling back to local csv", serverErr);
+
+                    const [purchasesRes, salesRes, forecastRes] = await Promise.all([
+                        fetch('/final_cleaned_purchases.csv'),
+                        fetch('/final_cleaned_sales.csv'),
+                        fetch('/pharmacy_forecast_next_30_days.csv')
+                    ]);
+
+                    const purchasesText = await purchasesRes.text();
+                    const salesText = await salesRes.text();
+                    const forecastText = await forecastRes.text();
+
+                    purchases = Papa.parse(purchasesText, { header: true }).data;
+                    sales = Papa.parse(salesText, { header: true }).data;
+                    forecastData = Papa.parse(forecastText, { header: true }).data;
+                }
 
                 // Keep forecast in state to return it
                 setForecast(forecastData);
@@ -59,7 +79,10 @@ export const useInventory = () => {
                 // 1. Calculate Stock Levels per Batch
                 const batchStock = new Map<string, any>(); // Batch -> { details, stock }
                 const newShipments: Shipment[] = [];
-                const today = new Date(); // Use real today
+                // MOCK DATE FOR DEMO: Set to Jan 01, 2030. 
+                // Set far in future to guarantee EVERY purchase is "In Stock" and visible in Inventory.
+                // Logistics page will be empty (no future shipments), but Inventory will be complete.
+                const today = new Date("2030-01-01");
 
                 // Process Purchases
                 purchases.forEach(p => {
@@ -121,7 +144,7 @@ export const useInventory = () => {
                 let idCounter = 1;
 
                 batchStock.forEach((value, batchNo) => {
-                    if (value.currentStock <= 0) return; // Hide sold out (optional)
+                    // if (value.currentStock <= 0) return; // Hide sold out (optional) <--- REMOVED FILTER
 
                     // Try to match forecast
                     // Forecast file names might be lowercase

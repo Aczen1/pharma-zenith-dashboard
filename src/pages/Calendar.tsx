@@ -78,7 +78,7 @@ const CalendarPage = () => {
     const expiredMedicines = allMedicines.filter(med => differenceInDays(med.expiryDate, today) < 0);
 
     return (
-        <DashboardLayout title="Compliance Calendar">
+        <DashboardLayout title="Calendar">
             <div className="flex gap-6">
                 {/* Left: Calendar Grid */}
                 <div className="flex-1 flex flex-col gap-4 max-w-4xl">

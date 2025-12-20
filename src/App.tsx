@@ -12,6 +12,7 @@ import Logistics from "./pages/Logistics";
 import Settings from "./pages/Settings";
 import CalendarPage from "./pages/Calendar";
 import SmartShelfPage from "./pages/SmartShelfPage";
+import DataUpdatePage from "./pages/DataUpdatePage";
 import NotFound from "./pages/NotFound";
 
 const CLERK_PUBLISHABLE_KEY = "pk_test_dG9waWNhbC1raXR0ZW4tNC5jbGVyay5hY2NvdW50cy5kZXYk";
@@ -86,6 +87,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <SmartShelfPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/update-data"
+              element={
+                <ProtectedRoute>
+                  <DataUpdatePage />
                 </ProtectedRoute>
               }
             />

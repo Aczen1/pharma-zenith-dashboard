@@ -34,6 +34,8 @@ const SmartShelfPage = () => {
     const { medicines, forecast, loading } = useInventory();
     const [open, setOpen] = useState(false);
     const [selectedMedicine, setSelectedMedicine] = useState<string | null>(null);
+    const [insight, setInsight] = useState<string | null>(null);
+    const [insightLoading, setInsightLoading] = useState(false);
 
     // Get unique medicine names for the combobox
     const uniqueMedicines = useMemo(() => {
@@ -52,17 +54,44 @@ const SmartShelfPage = () => {
     // Prepare Chart Data
     const chartData = useMemo(() => {
         if (!selectedMedicine || forecast.length === 0) return [];
-
         const drugForecasts = forecast.filter(f => f.Drug_Name?.toLowerCase() === selectedMedicine.toLowerCase());
-
         return drugForecasts
             .map(f => ({
                 date: f.Date,
                 predicted: parseFloat(f.Predicted_Qty) || 0
             }))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
     }, [forecast, selectedMedicine]);
+
+    // Fetch Insight when medicine changes
+    const fetchInsight = async (name: string, batches: any[], chartData: any[]) => {
+        setInsightLoading(true);
+        setInsight(null);
+        try {
+            const stock = batches.reduce((acc: number, b: any) => acc + b.currentStock, 0);
+            const expiry = batches.length > 0 ? batches[0].expiryDate : "N/A";
+            const predicted = chartData.reduce((acc: number, c: any) => acc + c.predicted, 0) || 0;
+
+            const res = await fetch("http://localhost:5000/api/analyze", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name,
+                    stock,
+                    expiry,
+                    forecast: Math.round(predicted),
+                    batches: batches.map(b => ({ batch: b.batchNumber, stock: b.currentStock, expiry: b.expiryDate }))
+                })
+            });
+            const data = await res.json();
+            if (data.insight) setInsight(data.insight);
+        } catch (e) {
+            console.error(e);
+            setInsight("Failed to load AI insight.");
+        } finally {
+            setInsightLoading(false);
+        }
+    };
 
     if (loading) {
         return <div className="p-8 text-center">Loading Smart Shelf...</div>;
@@ -105,8 +134,14 @@ const SmartShelfPage = () => {
                                                     key={medicineName}
                                                     value={medicineName}
                                                     onSelect={(currentValue) => {
-                                                        setSelectedMedicine(currentValue === selectedMedicine ? null : currentValue);
+                                                        const newName = currentValue === selectedMedicine ? null : currentValue;
+                                                        setSelectedMedicine(newName);
                                                         setOpen(false);
+                                                        if (newName) {
+                                                            // Calculate derived data for insight
+                                                            // We need to re-derive logic here or use useEffect. 
+                                                            // For simplicity, let's trigger it via useEffect on selectedMedicine changes.
+                                                        }
                                                     }}
                                                 >
                                                     <Check
@@ -123,6 +158,9 @@ const SmartShelfPage = () => {
                                 </Command>
                             </PopoverContent>
                         </Popover>
+
+                        {/* Trigger Insight Fetch on Selection Change */}
+                        {/* We use a hidden component or logic here. Actually better to use useEffect. */}
 
                         {/* Selected Medicine Details Preview */}
                         {selectedMedicine && selectedBatches.length > 0 && (
@@ -234,28 +272,67 @@ const SmartShelfPage = () => {
                         </CardContent>
                     </Card>
 
-                    {/* Alerts Section */}
+                    {/* Alerts/Insights Section */}
                     {selectedMedicine && (
-                        <Card className="shrink-0 h-[120px]">
+                        <Card className="shrink-0 h-[140px] border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
                             <CardHeader className="py-3">
-                                <CardTitle className="text-base flex items-center gap-2 text-amber-600">
-                                    <AlertTriangle className="w-4 h-4" /> Insight
+                                <CardTitle className="text-base flex items-center gap-2 text-amber-700 dark:text-amber-500">
+                                    <AlertTriangle className="w-5 h-5" /> Gemini AI Insight
+                                    {insightLoading && <span className="ml-2 text-xs font-normal text-muted-foreground animate-pulse">Analyzing...</span>}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="py-0 pb-3">
-                                <div className="text-sm text-foreground">
-                                    Displaying forecast and inventory data for <strong>{selectedMedicine}</strong>.
-                                    {selectedBatches.length > 0 && selectedBatches[0].currentStock < 50 && (
-                                        <span className="text-amber-600 ml-1 font-medium">Stock is running low!</span>
+                                <div className="text-sm text-foreground/90 leading-relaxed">
+                                    {insightLoading ? (
+                                        "Gathering improved insights..."
+                                    ) : insight ? (
+                                        insight
+                                    ) : (
+                                        // Fallback manual checks + Button to retry
+                                        <div className="flex justify-between items-center">
+                                            <span>
+                                                Displaying forecast and inventory data for <strong>{selectedMedicine}</strong>.
+                                                {selectedBatches.length > 0 && selectedBatches[0].currentStock < 50 && (
+                                                    <span className="text-amber-600 ml-1 font-medium">Stock is running low!</span>
+                                                )}
+                                            </span>
+                                            <Button variant="ghost" size="sm" onClick={() => fetchInsight(selectedMedicine, selectedBatches, chartData)}>
+                                                Generate AI Insight
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             </CardContent>
                         </Card>
                     )}
+
+                    {/* Trigger Effect */}
+                    {/* We use a hidden component logic workaround or just useEffect. Re-rendering with unique key is messy. */}
+                    {/* Let's use a side-effect component or simple ref. Actually, just adding a useEffect below is best. */}
+                    <InsightTrigger
+                        selectedMedicine={selectedMedicine}
+                        selectedBatches={selectedBatches}
+                        chartData={chartData}
+                        onFetch={fetchInsight}
+                    />
                 </div>
             </div>
         </DashboardLayout>
     );
 };
+
+// Helper component to trigger effect cleanly
+const InsightTrigger = ({ selectedMedicine, selectedBatches, chartData, onFetch }: any) => {
+    useMemo(() => {
+        if (selectedMedicine) {
+            // Debounce slightly or just call
+            const timeout = setTimeout(() => {
+                onFetch(selectedMedicine, selectedBatches, chartData);
+            }, 500);
+            return () => clearTimeout(timeout);
+        }
+    }, [selectedMedicine]); // Only trigger on medicine switch, batches/chartData are derived
+    return null;
+}
 
 export default SmartShelfPage;
