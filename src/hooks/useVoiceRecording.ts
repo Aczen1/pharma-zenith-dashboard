@@ -41,7 +41,7 @@ declare global {
     }
 }
 
-export const useVoiceRecording = () => {
+export const useVoiceRecording = (lang: string = "en-US") => {
     const [isListening, setIsListening] = useState(false);
     const [transcript, setTranscript] = useState("");
     const [isSupported, setIsSupported] = useState(false);
@@ -54,7 +54,7 @@ export const useVoiceRecording = () => {
             recognitionRef.current = new SpeechRecognition();
             recognitionRef.current.continuous = false;
             recognitionRef.current.interimResults = false;
-            recognitionRef.current.lang = "en-US";
+            recognitionRef.current.lang = lang;
 
             recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
                 const transcript = event.results[0][0].transcript;
@@ -75,7 +75,7 @@ export const useVoiceRecording = () => {
                 recognitionRef.current.stop();
             }
         };
-    }, []);
+    }, [lang]);
 
     const startListening = () => {
         if (recognitionRef.current && !isListening) {

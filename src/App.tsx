@@ -7,18 +7,28 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { LocationProvider } from "./contexts/LocationContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { useEffect } from "react";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Orders from "./pages/Orders";
 import Logistics from "./pages/Logistics";
 import Settings from "./pages/Settings";
 import CalendarPage from "./pages/Calendar";
 import SmartShelfPage from "./pages/SmartShelfPage";
+import UploadDataPage from "./pages/UploadData";
 import NotFound from "./pages/NotFound";
 
 const CLERK_PUBLISHABLE_KEY = "pk_test_dG9waWNhbC1raXR0ZW4tNC5jbGVyay5hY2NvdW50cy5kZXYk";
 
 const queryClient = new QueryClient();
+
+// Initialize dark mode from localStorage
+const initDarkMode = () => {
+  const theme = localStorage.getItem('theme');
+  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  }
+};
+initDarkMode();
 
 const AuthRedirect = () => {
   const { isLoaded, isSignedIn } = useAuth();
@@ -54,10 +64,10 @@ const App = () => (
                   }
                 />
                 <Route
-                  path="/orders"
+                  path="/upload-data"
                   element={
                     <ProtectedRoute>
-                      <Orders />
+                      <UploadDataPage />
                     </ProtectedRoute>
                   }
                 />

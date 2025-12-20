@@ -15,8 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 222 47% 20%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 230 65% 55%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -28,75 +28,76 @@
     --accent-foreground: 222 47% 11%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 222 47% 20%;
+    --ring: 230 65% 55%;
 
     --radius: 0.75rem;
 
-    /* Pharma Zenith Custom Colors - Updated to Purplish */
-    --pharma-purple: 270 60% 25%;
-    --pharma-purple-light: 270 50% 35%;
+    /* KPI Card Gradients - Fresh Modern Colors */
+    --kpi-lime-start: 85 65% 50%;
+    --kpi-lime-end: 100 60% 42%;
 
-    /* KPI Card Gradients */
-    --kpi-yellow-start: 45 93% 58%;
-    --kpi-yellow-end: 38 92% 50%;
+    --kpi-orange-start: 35 95% 55%;
+    --kpi-orange-end: 25 92% 48%;
 
-    --kpi-orange-start: 25 95% 53%;
-    --kpi-orange-end: 17 88% 45%;
+    --kpi-coral-start: 10 90% 62%;
+    --kpi-coral-end: 0 82% 55%;
 
-    --kpi-red-start: 0 84% 60%;
-    --kpi-red-end: 0 72% 51%;
+    --kpi-mint-start: 165 70% 50%;
+    --kpi-mint-end: 175 65% 42%;
 
-    --kpi-green-start: 142 76% 46%;
-    --kpi-green-end: 142 69% 38%;
-
-    /* Sidebar - Minimal Neutral Palette */
-    --sidebar-background: 0 0% 100%;
+    /* Sidebar - Glassmorphism */
+    --sidebar-background: 0 0% 100% / 0.85;
     --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 220 14% 96%;
     --sidebar-primary-foreground: 222 47% 11%;
     --sidebar-accent: 220 14% 96%;
     --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 222 47% 20%;
+    --sidebar-ring: 230 65% 55%;
 
-    /* Removed purple colors */
-    --purple-primary: 0 0% 0%;
-    --purple-accent: 0 0% 0%;
-    --purple-lavender: 0 0% 0%;
+    /* Glass Effect Variables */
+    --glass-bg: 0 0% 100% / 0.7;
+    --glass-border: 0 0% 100% / 0.3;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   }
 
   .dark {
-    --background: 222 47% 11%;
+    --background: 224 40% 8%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 15%;
+    --card: 224 40% 12%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 15%;
+    --popover: 224 40% 12%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222 47% 11%;
+    --primary: 230 65% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 30% 22%;
+    --secondary: 224 30% 18%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 222 30% 22%;
+    --muted: 224 30% 18%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 222 30% 22%;
+    --accent: 224 30% 18%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 222 30% 22%;
-    --input: 222 30% 22%;
-    --ring: 212 27% 84%;
+    --border: 224 30% 20%;
+    --input: 224 30% 20%;
+    --ring: 230 65% 60%;
+
+    /* Dark Mode Glass Effect Variables */
+    --glass-bg: 224 40% 10% / 0.8;
+    --glass-border: 224 40% 20% / 0.5;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -112,24 +113,84 @@
 }
 
 @layer utilities {
-  .kpi-card-yellow {
-    background: linear-gradient(135deg, hsl(var(--kpi-yellow-start)) 0%, hsl(var(--kpi-yellow-end)) 100%);
+  /* Glassmorphism Components */
+  .glass-card {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-sidebar {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-topbar {
+    background: hsl(var(--glass-bg));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid hsl(var(--glass-border));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  }
+
+  .glass-tooltip {
+    background: hsl(var(--card));
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border));
+  }
+
+  /* KPI Card Gradients */
+  .kpi-card-lime {
+    background: linear-gradient(135deg, hsl(var(--kpi-lime-start)) 0%, hsl(var(--kpi-lime-end)) 100%);
   }
 
   .kpi-card-orange {
     background: linear-gradient(135deg, hsl(var(--kpi-orange-start)) 0%, hsl(var(--kpi-orange-end)) 100%);
   }
 
-  .kpi-card-red {
-    background: linear-gradient(135deg, hsl(var(--kpi-red-start)) 0%, hsl(var(--kpi-red-end)) 100%);
+  .kpi-card-coral {
+    background: linear-gradient(135deg, hsl(var(--kpi-coral-start)) 0%, hsl(var(--kpi-coral-end)) 100%);
   }
 
-  .kpi-card-green {
-    background: linear-gradient(135deg, hsl(var(--kpi-green-start)) 0%, hsl(var(--kpi-green-end)) 100%);
+  .kpi-card-mint {
+    background: linear-gradient(135deg, hsl(var(--kpi-mint-start)) 0%, hsl(var(--kpi-mint-end)) 100%);
   }
 
-  .sidebar-gradient {
-    background: #ffffff;
-    border-right: 1px solid #f3f4f6;
+  /* Smooth scrolling */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+
+  /* Focus visible */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .mobile-full {
+      @apply w-full;
+    }
+    
+    .mobile-hidden {
+      @apply hidden;
+    }
+    
+    .mobile-stack {
+      @apply flex-col;
+    }
+  }
+}
+
+/* Dark mode initialization */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    color-scheme: dark;
   }
 }

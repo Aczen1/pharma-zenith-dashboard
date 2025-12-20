@@ -37,7 +37,7 @@ export const processQuery = (query: string): string => {
 
     // Expiry Queries
     if (lowerQuery.includes("expire") || lowerQuery.includes("expiry") || lowerQuery.includes("expiring")) {
-        const expiring = getExpiringSoon(30);
+        const expiring = getExpiringSoon(medicines, 30);
         if (expiring.length === 0) {
             return "Good news! There are no medicines expiring within the next 30 days.";
         }
@@ -47,7 +47,7 @@ export const processQuery = (query: string): string => {
 
     // Low Stock Queries
     if (lowerQuery.includes("low stock") || lowerQuery.includes("shortage") || lowerQuery.includes("reorder")) {
-        const lowStock = getLowStock();
+        const lowStock = getLowStock(medicines);
         if (lowStock.length === 0) {
             return "All stock levels appear to be healthy.";
         }
@@ -57,7 +57,7 @@ export const processQuery = (query: string): string => {
 
     // General Stock/Medicines Queries
     if (lowerQuery.includes("total stock") || lowerQuery.includes("how many medicines")) {
-        return `We currently have ${getTotalMedicines()} unique medicines in the inventory, with a total of ${getTotalStock()} units in stock.`;
+        return `We currently have ${getTotalMedicines(medicines)} unique medicines in the inventory, with a total of ${getTotalStock(medicines)} units in stock.`;
     }
 
     if (lowerQuery.includes("list") || lowerQuery.includes("medicines") || lowerQuery.includes("inventory")) {
