@@ -78,11 +78,8 @@ const UploadDataPage = () => {
             const mergedData = [...existingData, ...results.data];
             localStorage.setItem(storageKey, JSON.stringify(mergedData));
             
-            // Trigger storage event for cross-tab sync
-            window.dispatchEvent(new StorageEvent('storage', {
-              key: storageKey,
-              newValue: JSON.stringify(mergedData),
-            }));
+            // Trigger custom event for same-tab sync
+            window.dispatchEvent(new CustomEvent('pharma-data-updated'));
             
             toast.success(`${file.name} uploaded successfully! ${results.data.length} records added.`);
             
